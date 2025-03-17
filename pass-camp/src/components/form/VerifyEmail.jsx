@@ -1,19 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const VerifyEmail = () => {
+  const [otp, setOtp] = useState(new Array(6).fill(""));
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(null);
+  const inputRefs = useRef([]);
   const navigate = useNavigate();
 
-  const handleVerify = () => {
+  const handleChange = (e, index) => {
+    const value = e.target.value;
+    if (!/^\d?$/.test(value)) return; // Only allow numbers
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
+  const handleVerify = async () => {
+    const code = otp.join("").toString();
+    if (code.length !== 6) {
+      alert("Please enter a 6-digit verification code.");
+      return;
+    }
+
     setIsVerifying(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/account/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({code: code }),
+        }
+      );
+
+      if (response.ok) {
+        setVerificationSuccess(true);
+        alert("✅ Email verified successfully!");
+        setTimeout(() => navigate("/login"), 2000);
+      } else {
+        const data = await response.json();
+        setVerificationSuccess(false);
+        alert(`❌ Verification failed: ${data.message || "Invalid code."}`);
+      }
+    } catch (error) {
+      console.log(error);
+      setVerificationSuccess(false);
+      alert("An error occurred. Please try again.");
+    } finally {
       setIsVerifying(false);
-      setVerificationSuccess(true); // Change to `false` to simulate failure
-    }, 2000);
+    }
   };
 
   const handleResendEmail = () => {
@@ -21,25 +69,33 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 text-gray-900 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center text-gray-900 p-4">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md text-center">
         <h2 className="text-2xl font-semibold mb-4">Verify Your Email</h2>
         <p className="text-gray-600 mb-6">
-          We sent a verification link to your email. Please check your inbox.
+          We sent a verification code to your email. Enter the code below.
         </p>
 
-        {/* Show Loader while verifying */}
-        {isVerifying && <p className="text-blue-500">Verifying...</p>}
+        {/* OTP Input Fields */}
+        <div className="flex justify-center gap-2">
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              ref={(el) => (inputRefs.current[index] = el)}
+              type="text"
+              maxLength="1"
+              value={digit}
+              onChange={(e) => handleChange(e, index)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              className="w-10 h-10 text-center text-lg border border-gray-400 rounded-md focus:ring-2 focus:ring-[#E9A885] outline-none"
+            />
+          ))}
+        </div>
 
-        {/* Show Success Message */}
-        {verificationSuccess && (
-          <p className="text-green-600">✅ Email verified successfully!</p>
-        )}
-
-        {/* Show Error Message */}
-        {verificationSuccess === false && (
-          <p className="text-red-500">❌ Verification failed. Try again.</p>
-        )}
+        {/* Status Messages */}
+        {isVerifying && <p className="text-blue-500 mt-2">Verifying...</p>}
+        {verificationSuccess && <p className="text-green-600 mt-2">✅ Email verified successfully!</p>}
+        {verificationSuccess === false && <p className="text-red-500 mt-2">❌ Verification failed. Try again.</p>}
 
         {/* Verify Button */}
         <button
@@ -58,15 +114,6 @@ const VerifyEmail = () => {
           Resend Verification Email
         </button>
 
-        {/* Redirect to login after success */}
-        {verificationSuccess && (
-          <button
-            onClick={() => navigate("/login")}
-            className="mt-4 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition"
-          >
-            Go to Login
-          </button>
-        )}
       </div>
     </div>
   );

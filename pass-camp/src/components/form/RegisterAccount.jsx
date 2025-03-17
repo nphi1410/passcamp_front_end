@@ -3,22 +3,17 @@ import React, { useState } from "react";
 const RegisterAccount = ({ form, handleChange, handleNext }) => {
   const [errors, setErrors] = useState({});
 
-  const validateForm = () => {
-    let newErrors = {};
-
-    if (!form.username.trim()) newErrors.username = "Username is required.";
-    if (!form.password) newErrors.password = "Password is required.";
-    if (!form.confirmPassword)
-      newErrors.confirmPassword = "Confirm Password is required.";
-    if (form.password && form.confirmPassword && form.password !== form.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match.";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+  const validateConfirmPassword = () => {
+    if (form.password !== form.confirmPassword) {
+      setErrors({ confirmPassword: "Passwords do not match." });
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleNextStep = () => {
-    if (validateForm()) {
+    if (validateConfirmPassword()) {
       handleNext();
     }
   };
@@ -27,7 +22,9 @@ const RegisterAccount = ({ form, handleChange, handleNext }) => {
     <form className="space-y-4">
       {/* Username */}
       <div>
-        <label className="block text-sm mb-1">Username</label>
+        <label className="block text-sm mb-1">
+          Username <span className="text-red-500">*</span>
+        </label>
         <input
           type="text"
           name="username"
@@ -35,13 +32,15 @@ const RegisterAccount = ({ form, handleChange, handleNext }) => {
           placeholder="Enter username"
           value={form.username}
           onChange={handleChange}
+          required // ✅ Browser will check if the field is filled
         />
-        {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
       </div>
 
       {/* Password */}
       <div>
-        <label className="block text-sm mb-1">Password</label>
+        <label className="block text-sm mb-1">
+          Password <span className="text-red-500">*</span>
+        </label>
         <input
           type="password"
           name="password"
@@ -49,13 +48,15 @@ const RegisterAccount = ({ form, handleChange, handleNext }) => {
           placeholder="Enter password"
           value={form.password}
           onChange={handleChange}
+          required 
         />
-        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
       </div>
 
       {/* Confirm Password */}
       <div>
-        <label className="block text-sm mb-1">Confirm Password</label>
+        <label className="block text-sm mb-1">
+          Confirm Password <span className="text-red-500">*</span>
+        </label>
         <input
           type="password"
           name="confirmPassword"
@@ -63,6 +64,7 @@ const RegisterAccount = ({ form, handleChange, handleNext }) => {
           placeholder="Confirm password"
           value={form.confirmPassword}
           onChange={handleChange}
+          required 
         />
         {errors.confirmPassword && (
           <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>

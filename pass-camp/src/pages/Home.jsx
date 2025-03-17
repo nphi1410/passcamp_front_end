@@ -6,17 +6,9 @@ import Header from "../components/Header";
 import Paginate from "../components/Paginate";
 import CategoryFilter from "../components/CategoryFilter";
 import SortSelect from "../components/SortSelect";
+import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_KEY = import.meta.env.VITE_API_KEY;
-
-const API_OPTIONS = {
-  method: "GET",
-  headers: {
-    accept: "application/json",
-    Authorization: `Bearer ${API_KEY}`,
-  },
-};
 
 const Home = () => {
   const [triggerSearch, setTriggerSearch] = useState(true);
@@ -49,10 +41,10 @@ const Home = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/categories`, API_OPTIONS);
-      if (!response.ok)
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      const data = await response.json();
+      const response = await axios.get(`${API_BASE_URL}/categories`);
+  
+      const data = response.data; // 🔹 Axios automatically parses JSON
+  
       if (data.response === "False") {
         setErrorMsg(data.error || "Failed to fetch categories");
         setCategories([]);
@@ -60,42 +52,36 @@ const Home = () => {
         setCategories(data);
       }
     } catch (error) {
-      setErrorMsg("Fetching categories error:" + error);
+      setErrorMsg("Fetching categories error: " + (error.response?.data?.message || error.message));
     }
   };
-
-  const fetchingData = async (
-    searchTerm,
-    categoryId,
-    sortType,
-    currentPage
-  ) => {
+  
+  const fetchingData = async (searchTerm, categoryId, sortType, currentPage) => {
     setIsLoading(true);
     setErrorMsg("");
-
+  
     try {
       const endpoint = `${API_BASE_URL}/item?page=${currentPage}&sortType=${sortType}&categoryId=${categoryId}${
         searchTerm ? `&name=${encodeURIComponent(searchTerm)}` : ""
       }`;
-      const response = await fetch(endpoint, API_OPTIONS);
-      if (!response.ok)
-        throw new Error(`HTTP error! Status: ${response.status}`);
-
-      const data = await response.json();
+  
+      const response = await axios.get(endpoint);
+      const data = response.data;
+  
       if (data.response === "False") {
         setErrorMsg(data.error || "Failed to fetch data");
         setDataList([]);
       } else {
         setDataList(data.content);
         setTotalPage(data.totalPages);
-        console.log(data);
       }
     } catch (error) {
-      setErrorMsg("Fetching data error:" + error);
+      setErrorMsg("Fetching data error: " + (error.response?.data?.message || error.message));
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <main className="min-h-screen">

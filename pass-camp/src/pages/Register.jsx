@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import RegisterUserInfo from "../components/form/RegisterUserInfo";
 import RegisterAccount from "../components/form/RegisterAccount";
+import axios from "axios";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1); // Track form step
   const [form, setForm] = useState({
     username: "",
@@ -15,7 +17,7 @@ const Register = () => {
     lastName: "",
     email: "",
     gender: "",
-    birthdate: "",
+    birthday: "",
   });
 
   const handleChange = (e) => {
@@ -34,10 +36,25 @@ const Register = () => {
     setStep(2);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     console.log("Final Registration Data:", form);
-    alert("Registration Successful!");
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/account/register`, 
+        form);
+
+      if (response.ok) {
+        alert("Please check your email for verification.");
+        navigate("/verify");
+      } else {
+        alert("Error: Registration failed");
+        navigate("/login"); 
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -54,10 +71,18 @@ const Register = () => {
 
         {step === 1 ? (
           // **Step 1: Username & Password**
-          <RegisterAccount form={form} handleChange={handleChange} handleNext={handleNext} />
+          <RegisterAccount
+            form={form}
+            handleChange={handleChange}
+            handleNext={handleNext}
+          />
         ) : (
           // **Step 2: Personal Information**
-          <RegisterUserInfo form={form} handleChange={handleChange} handleSubmit={handleSubmit} />
+          <RegisterUserInfo
+            form={form}
+            handleChange={handleChange}
+            handleSubmit={handleSubmit}
+          />
         )}
 
         {/* Google Signup Button */}

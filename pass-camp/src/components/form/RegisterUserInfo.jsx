@@ -1,16 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const RegisterUserInfo = ({ form, handleChange, handleSubmit }) => {
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
     let newErrors = {};
-
-    if (!form.firstName.trim()) newErrors.firstName = "First Name is required.";
-    if (!form.lastName.trim()) newErrors.lastName = "Last Name is required.";
-    if (!form.email.trim()) newErrors.email = "Email is required.";
-    if (!form.gender) newErrors.gender = "Please select your gender.";
-    if (!form.birthdate) newErrors.birthdate = "Birthdate is required.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -27,7 +21,9 @@ const RegisterUserInfo = ({ form, handleChange, handleSubmit }) => {
     <form onSubmit={handleFormSubmit} className="space-y-4">
       {/* First Name */}
       <div>
-        <label className="block text-sm mb-1">First Name <span className="text-red-500">*</span></label>
+        <label className="block text-sm mb-1">
+          First Name <span className="text-red-500">*</span>
+        </label>
         <input
           type="text"
           name="firstName"
@@ -36,12 +32,16 @@ const RegisterUserInfo = ({ form, handleChange, handleSubmit }) => {
           value={form.firstName}
           onChange={handleChange}
         />
-        {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+        {errors.firstName && (
+          <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+        )}
       </div>
 
       {/* Last Name */}
       <div>
-        <label className="block text-sm mb-1">Last Name <span className="text-red-500">*</span></label>
+        <label className="block text-sm mb-1">
+          Last Name <span className="text-red-500">*</span>
+        </label>
         <input
           type="text"
           name="lastName"
@@ -50,12 +50,16 @@ const RegisterUserInfo = ({ form, handleChange, handleSubmit }) => {
           value={form.lastName}
           onChange={handleChange}
         />
-        {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+        {errors.lastName && (
+          <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+        )}
       </div>
 
       {/* Email */}
       <div>
-        <label className="block text-sm mb-1">Email <span className="text-red-500">*</span></label>
+        <label className="block text-sm mb-1">
+          Email <span className="text-red-500">*</span>
+        </label>
         <input
           type="email"
           name="email"
@@ -64,50 +68,60 @@ const RegisterUserInfo = ({ form, handleChange, handleSubmit }) => {
           value={form.email}
           onChange={handleChange}
         />
-        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+        {errors.email && (
+          <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+        )}
       </div>
 
       {/* Gender (Radio Buttons) */}
       <div>
-        <label className="block text-sm mb-1">Gender <span className="text-red-500">*</span></label>
+        <label className="block text-sm mb-1">
+          Gender <span className="text-red-500">*</span>
+        </label>
         <div className="flex space-x-4">
           <label className="flex items-center">
             <input
               type="radio"
               name="gender"
-              value="male"
+              value="MALE"
               className="mr-2"
-              checked={form.gender === "male"}
+              checked={form.gender === "MALE"}
               onChange={handleChange}
-            />
+              />
             Male
           </label>
           <label className="flex items-center">
             <input
               type="radio"
               name="gender"
-              value="female"
+              value="FEMALE"
               className="mr-2"
-              checked={form.gender === "female"}
+              checked={form.gender === "FEMALE"}
               onChange={handleChange}
             />
             Female
           </label>
         </div>
-        {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
+        {errors.gender && (
+          <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+        )}
       </div>
 
       {/* Birthdate */}
       <div>
-        <label className="block text-sm mb-1">Birthdate <span className="text-red-500">*</span></label>
+        <label className="block text-sm mb-1">
+          Birthdate <span className="text-red-500">*</span>
+        </label>
         <input
           type="date"
-          name="birthdate"
+          name="birthday"
           className="w-full p-2 bg-gray-50 rounded-md border border-gray-300 focus:ring-2 focus:ring-[#E9A885] outline-none"
           value={form.birthdate}
           onChange={handleChange}
         />
-        {errors.birthdate && <p className="text-red-500 text-xs mt-1">{errors.birthdate}</p>}
+        {errors.birthdate && (
+          <p className="text-red-500 text-xs mt-1">{errors.birthdate}</p>
+        )}
       </div>
 
       {/* Submit Button */}

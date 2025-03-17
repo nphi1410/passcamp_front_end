@@ -8,7 +8,9 @@ import {
   faMoneyBill,
 } from "@fortawesome/free-solid-svg-icons";
 import NotFound from "./errors/NotFound";
-import InternalServerError from "./errors/InternalServerError";
+import SelectAmountModal from "../components/SelectAmountModal";
+import { addToCart } from "../services/CartService";
+import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const base_img_url = "https://fakeimg.pl/300/";
@@ -18,19 +20,34 @@ const ItemDetail = () => {
   const itemId = searchParams.get("itemId");
   const [itemData, setItemData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Handle adding item to cart after selecting amount
+  const handleConfirm = async (amount) => {
+    const cartItem = {
+      accountId: JSON.parse(sessionStorage.getItem("loggedInUser"))?.accountId,
+      itemId: itemData?.item?.itemId,
+      amount: amount,
+      totalPrice: itemData?.item?.price * amount,
+    };
+
+    try {
+      await addToCart(cartItem);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Failed to add item to cart:", error);
+    }
+  };
 
   const fetchItemDetail = async (itemId) => {
     if (!itemId) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/item/info?itemId=${itemId}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch item data");
-      const data = await response.json();
-      console.log(data);
+      const response = await axios.get(`${API_BASE_URL}/item/info`, {
+        params: { itemId },
+      });
 
-      setItemData(data);
+      setItemData(response.data);
     } catch (error) {
       console.error("Fetch error:", error);
       setItemData(null);
@@ -43,10 +60,14 @@ const ItemDetail = () => {
     fetchItemDetail(itemId);
   }, [itemId]);
 
+  const item = itemData?.item;
+  const sellerAccount = itemData?.sellerAccount;
+  const availableAmount = itemData?.availableAmount;
+  const categories = itemData?.categories;
+
   if (loading) return <Spinner />;
   if (!itemData) return <NotFound />;
 
-  const { item, sellerAccount, availableAmount, categories } = itemData;
   return (
     <div className="grid w-11/12 mx-auto gap-6 py-6">
       {/* Title Section */}
@@ -131,10 +152,23 @@ const ItemDetail = () => {
               Buy Now
               <FontAwesomeIcon className="ml-2" icon={faMoneyBill} />
             </button>
-            <button className="bg-gradient-to-br from-[#E9A885] to-yellow-200 px-6 py-3 rounded-lg shadow-md hover:bg-yellow-600 transition w-full">
+            {/* Button to Open Modal */}
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-gradient-to-br from-[#E9A885] to-yellow-200 px-6 py-3 rounded-lg shadow-md hover:bg-yellow-600 transition w-full flex justify-center items-center"
+            >
               Add to Cart
               <FontAwesomeIcon className="ml-2" icon={faCartShopping} />
             </button>
+
+            {/* Select Amount Modal */}
+            <SelectAmountModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onConfirm={handleConfirm}
+              product={item}
+              availableAmount={availableAmount}
+            />
           </div>
         </div>
       </div>
